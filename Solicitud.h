@@ -1,16 +1,16 @@
-#ifndef SOLICITUDAMISTAD_H
-#define SOLICITUDAMISTAD_H
+#ifndef SOLICITUD_H
+#define SOLICITUD_H
 
 #include "Foto.h"
 #include <string>
-class SolicitudAmistad
+class Solicitud
 {
     std::string remitente;
     std::string destinatario;
     std::string estado;
     std::string fechaSolicitud;
 public:
-    SolicitudAmistad();
+    Solicitud();
 };
 
-#endif // SOLICITUDAMISTAD_H
+#endif // SOLICITUD_H

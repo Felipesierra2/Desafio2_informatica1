@@ -9,11 +9,12 @@ add_executable(Desafio_2 main.cpp
     Usuario.h Usuario.cpp
     UdeABook.h UdeABook.cpp
     Mensajes.h Mensajes.cpp
-    SolicitudAmistad.h SolicitudAmistad.cpp
+    Solicitud.h Solicitud.cpp
     Album.h Album.cpp
     Foto.h Foto.cpp
     README.md
     .gitignore
+    RedSocial.h RedSocial.cpp
 
 )
 

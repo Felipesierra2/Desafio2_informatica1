@@ -7,6 +7,7 @@ private:
     UdeABook* usuarios;
 public:
     UdeABook();
+    void iniciarSección();
 };
 
 #endif // UDEABOOK_H
