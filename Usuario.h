@@ -51,6 +51,14 @@ public:
     bool agregarAmigo(Usuario* usuario);
     int getCantidadAmigos() const;
 
+    bool agregarMensajeEnviado(Mensajes* mensaje);
+    bool agregarMensajeRecibido(Mensajes* mensaje);
+    bool enviarMensaje(Usuario* destinatario,const std::string& contenido,const std::string& fecha);
+    Mensajes* getMensajeRecibido(int indice) const;
+    bool marcarMensajeComoLeido(int indice);
+    int getCantidadMensajesEnviados() const;
+    int getCantidadMensajesRecibidos() const;
+
     //getters
     const std::string& getApodo() const;
     const std::string& getFechaDeNacimiento() const;

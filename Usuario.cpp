@@ -2,7 +2,6 @@
 
 /*Constructor que define la estrcutura del usuario, se declara vació por defecto
  */
-
 Usuario::Usuario()
     : apodo(""),
     fechaDeNacimiento(""),
@@ -25,7 +24,6 @@ Usuario::Usuario()
     capacidadAlbumes(0)
 {
 }
-
 
 /*Constructor parametrizado del usuario*/
 Usuario::Usuario(const std::string& apodo,
@@ -57,6 +55,7 @@ Usuario::Usuario(const std::string& apodo,
 {
 }
 
+/*Itera sobre los amigos revisando si ya un usuario lo contiene*/
 bool Usuario::esAmigo(const Usuario* usuario) const
 {
     for (int i = 0; i < cantidadAmigos; ++i) {
@@ -66,6 +65,10 @@ bool Usuario::esAmigo(const Usuario* usuario) const
     }
     return false;
 }
+
+/*Metodo que recibe un usuario y valida si ya es amigo de otro usuario
+ * si no son amigos retorna true
+ */
 
 bool Usuario::agregarAmigo(Usuario* usuario){
     if (usuario == nullptr || usuario == this || esAmigo(usuario)) {
@@ -91,9 +94,134 @@ bool Usuario::agregarAmigo(Usuario* usuario){
     return true;
 }
 
+/*Metodo con el que accedemos
+ */
 int Usuario::getCantidadAmigos() const
 {
     return cantidadAmigos;
+}
+
+bool Usuario::agregarMensajeEnviado(Mensajes* mensaje){
+    if (mensaje == nullptr)
+    {
+        return false;
+    }
+
+    if (cantidadMensajesEnviados == capacidadMensajesEnviados){
+        int nuevaCapacidad = (capacidadMensajesEnviados == 0)
+        ? 2
+        : capacidadMensajesEnviados * 2;
+
+        Mensajes** nuevosMensajes = new Mensajes*[nuevaCapacidad];
+
+        for (int i = 0; i < cantidadMensajesEnviados; i++)
+        {
+            nuevosMensajes[i] = mensajesEnviados[i];
+        }
+
+        delete[] mensajesEnviados;
+
+        mensajesEnviados = nuevosMensajes;
+        capacidadMensajesEnviados = nuevaCapacidad;
+    }
+
+    mensajesEnviados[cantidadMensajesEnviados] = mensaje;
+    cantidadMensajesEnviados++;
+
+    return true;
+}
+
+bool Usuario::agregarMensajeRecibido(Mensajes* mensaje)
+{
+    if (mensaje == nullptr)
+    {
+        return false;
+    }
+
+    if (cantidadMensajesRecibidos == capacidadMensajesRecibidos)
+    {
+        int nuevaCapacidad = (capacidadMensajesRecibidos == 0)
+        ? 2
+        : capacidadMensajesRecibidos * 2;
+
+        Mensajes** nuevosMensajes = new Mensajes*[nuevaCapacidad];
+
+        for (int i = 0; i < cantidadMensajesRecibidos; i++)
+        {
+            nuevosMensajes[i] = mensajesRecibidos[i];
+        }
+
+        delete[] mensajesRecibidos;
+
+        mensajesRecibidos = nuevosMensajes;
+        capacidadMensajesRecibidos = nuevaCapacidad;
+    }
+
+    mensajesRecibidos[cantidadMensajesRecibidos] = mensaje;
+    cantidadMensajesRecibidos++;
+
+    return true;
+}
+
+bool Usuario::enviarMensaje(Usuario* destinatario,const std::string& contenido,const std::string& fecha){
+    if (destinatario == nullptr || destinatario == this)
+    {
+        return false;
+    }
+
+    Mensajes* mensaje = new Mensajes(
+        this,
+        destinatario,
+        contenido,
+        fecha
+        );
+
+    if (!agregarMensajeEnviado(mensaje))
+    {
+        delete mensaje;
+        return false;
+    }
+
+    if (!destinatario->agregarMensajeRecibido(mensaje))
+    {
+        cantidadMensajesEnviados--;
+        delete mensaje;
+        return false;
+    }
+
+    return true;
+}
+
+Mensajes* Usuario::getMensajeRecibido(int indice) const
+{
+    if (indice < 0 || indice >= cantidadMensajesRecibidos)
+    {
+        return nullptr;
+    }
+
+    return mensajesRecibidos[indice];
+}
+
+bool Usuario::marcarMensajeComoLeido(int indice){
+    Mensajes* mensaje = getMensajeRecibido(indice);
+
+    if (mensaje == nullptr)
+    {
+        return false;
+    }
+
+    mensaje->marcarComoLeido();
+    return true;
+}
+
+int Usuario::getCantidadMensajesEnviados() const
+{
+    return cantidadMensajesEnviados;
+}
+
+int Usuario::getCantidadMensajesRecibidos() const
+{
+    return cantidadMensajesRecibidos;
 }
 
 //Getters
@@ -288,3 +416,4 @@ Usuario& Usuario::operator=(const Usuario& otro)
 
     return *this;
 }
+
