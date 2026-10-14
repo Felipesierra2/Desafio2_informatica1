@@ -1,4 +1,5 @@
 #include "Usuario.h"
+#include "MedidorRecursos.h"
 
 /*Constructor que define la estrcutura del usuario, se declara vació por defecto
  */
@@ -59,6 +60,7 @@ Usuario::Usuario(const std::string& apodo,
 bool Usuario::esAmigo(const Usuario* usuario) const
 {
     for (int i = 0; i < cantidadAmigos; ++i) {
+        MedidorRecursos::registrarIteracion();
         if (amigos[i] == usuario) {
             return true;
         }
@@ -79,10 +81,14 @@ bool Usuario::agregarAmigo(Usuario* usuario){
         int nuevaCapacidad = (capacidadAmigos == 0) ? 4 : capacidadAmigos * 2;
 
         Usuario** nuevo = new Usuario*[nuevaCapacidad];
+        MedidorRecursos::registrarMemoria(nuevaCapacidad * sizeof(Usuario*));
 
         for (int i = 0; i < cantidadAmigos; ++i) {
+            MedidorRecursos::registrarIteracion();
             nuevo[i] = amigos[i];
         }
+
+        MedidorRecursos::liberarMemoria(capacidadAmigos * sizeof(Usuario*));
 
         delete[] amigos;
         amigos = nuevo;
@@ -114,10 +120,15 @@ bool Usuario::agregarMensajeEnviado(Mensajes* mensaje){
 
         Mensajes** nuevosMensajes = new Mensajes*[nuevaCapacidad];
 
+        MedidorRecursos::registrarMemoria(nuevaCapacidad * sizeof(Mensajes*));
+
         for (int i = 0; i < cantidadMensajesEnviados; i++)
         {
+            MedidorRecursos::registrarIteracion();
             nuevosMensajes[i] = mensajesEnviados[i];
         }
+
+        MedidorRecursos::liberarMemoria(capacidadMensajesEnviados * sizeof(Mensajes*));
 
         delete[] mensajesEnviados;
 
@@ -146,10 +157,15 @@ bool Usuario::agregarMensajeRecibido(Mensajes* mensaje)
 
         Mensajes** nuevosMensajes = new Mensajes*[nuevaCapacidad];
 
+        MedidorRecursos::registrarMemoria(nuevaCapacidad * sizeof(Mensajes*));
+
         for (int i = 0; i < cantidadMensajesRecibidos; i++)
         {
+            MedidorRecursos::registrarIteracion();
             nuevosMensajes[i] = mensajesRecibidos[i];
         }
+
+        MedidorRecursos::liberarMemoria(capacidadMensajesRecibidos * sizeof(Mensajes*));
 
         delete[] mensajesRecibidos;
 
@@ -164,8 +180,11 @@ bool Usuario::agregarMensajeRecibido(Mensajes* mensaje)
 }
 
 bool Usuario::enviarMensaje(Usuario* destinatario,const std::string& contenido,const std::string& fecha){
+    MedidorRecursos::iniciarMedicion();
+
     if (destinatario == nullptr || destinatario == this)
     {
+        MedidorRecursos::mostrarReporte();
         return false;
     }
 
@@ -175,20 +194,26 @@ bool Usuario::enviarMensaje(Usuario* destinatario,const std::string& contenido,c
         contenido,
         fecha
         );
+    MedidorRecursos::registrarMemoria(sizeof(Mensajes));
 
     if (!agregarMensajeEnviado(mensaje))
     {
+        MedidorRecursos::liberarMemoria(sizeof(Mensajes));
         delete mensaje;
+        MedidorRecursos::mostrarReporte();
         return false;
     }
 
     if (!destinatario->agregarMensajeRecibido(mensaje))
     {
         cantidadMensajesEnviados--;
+        MedidorRecursos::liberarMemoria(sizeof(Mensajes));
         delete mensaje;
+        MedidorRecursos::mostrarReporte();
         return false;
     }
 
+    MedidorRecursos::mostrarReporte();
     return true;
 }
 
@@ -222,6 +247,57 @@ int Usuario::getCantidadMensajesEnviados() const
 int Usuario::getCantidadMensajesRecibidos() const
 {
     return cantidadMensajesRecibidos;
+}
+
+
+bool Usuario::agregarAlbum(Album* album)
+{
+    if (album == nullptr)
+    {
+        return false;
+    }
+
+    if (cantidadAlbumes == capacidadAlbumes)
+    {
+        int nuevaCapacidad = (capacidadAlbumes == 0)
+        ? 2
+        : capacidadAlbumes * 2;
+
+        Album** nuevosAlbumes = new Album*[nuevaCapacidad];
+        MedidorRecursos::registrarMemoria(nuevaCapacidad * sizeof(Album*));
+
+        for (int i = 0; i < cantidadAlbumes; i++)
+        {
+            nuevosAlbumes[i] = albumes[i];
+        }
+
+        MedidorRecursos::liberarMemoria(capacidadAlbumes * sizeof(Album*));
+
+        delete[] albumes;
+
+        albumes = nuevosAlbumes;
+        capacidadAlbumes = nuevaCapacidad;
+    }
+
+    albumes[cantidadAlbumes] = album;
+    cantidadAlbumes++;
+
+    return true;
+}
+
+Album* Usuario::getAlbum(int indice) const
+{
+    if (indice < 0 || indice >= cantidadAlbumes)
+    {
+        return nullptr;
+    }
+
+    return albumes[indice];
+}
+
+int Usuario::getCantidadAlbumes() const
+{
+    return cantidadAlbumes;
 }
 
 //Getters
@@ -299,14 +375,24 @@ void Usuario::setFechaDeInscripcion(const std::string& fechaDeInscripcion)
 /* libera el arreglo, pero no los Usuario* que contiene
  */
 Usuario::~Usuario(){
+    MedidorRecursos::liberarMemoria(capacidadAmigos * sizeof(Usuario*));
     delete[] amigos;
+
+    MedidorRecursos::liberarMemoria(capacidadMensajesEnviados * sizeof(Mensajes*));
     delete[] mensajesEnviados;
+
+    MedidorRecursos::liberarMemoria(capacidadMensajesRecibidos * sizeof(Mensajes*));
     delete[] mensajesRecibidos;
+
     delete[] solicitudAmistad;
+
+    for (int i = 0; i < cantidadAlbumes; i++){
+        delete albumes[i];
+    }
+    MedidorRecursos::liberarMemoria(capacidadAlbumes * sizeof(Album*));
+
     delete[] albumes;
 }
-
-
 /*Realiza una copia técnica de los datos del usuario y sus referencias
  */
 Usuario::Usuario(const Usuario& otro)

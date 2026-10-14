@@ -7,11 +7,13 @@ class Album
 {
 private:
     std::string nombre;
-    std::string rutaDeAlmacenamiento;
-    std::string privacidad;
-    Foto* fotos;
+    std::string ruta;
 public:
-    Album();
+    Album(const std::string& nombre,
+          const std::string& ruta);
+
+    const std::string& getNombre() const;
+    const std::string& getRuta() const;
 };
 
 #endif // ALBUM_H

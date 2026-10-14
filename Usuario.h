@@ -59,6 +59,10 @@ public:
     int getCantidadMensajesEnviados() const;
     int getCantidadMensajesRecibidos() const;
 
+    bool agregarAlbum(Album* album);
+    Album* getAlbum(int indice) const;
+    int getCantidadAlbumes() const;
+
     //getters
     const std::string& getApodo() const;
     const std::string& getFechaDeNacimiento() const;
