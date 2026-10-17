@@ -47,17 +47,25 @@ public:
             const std::string& ciudad,
             const std::string& fechaDeInscripcion);
 
+    ~Usuario();
+    Usuario(const Usuario& otro);
+    Usuario& operator=(const Usuario& otro);
+
     bool esAmigo(const Usuario* usuario) const;
     bool agregarAmigo(Usuario* usuario);
+    bool agregarSolicitud(Solicitud* solicitud);
+    bool quitarAmigo(Usuario* usuario);
+    Solicitud* getSolicitud(int indice) const;
     int getCantidadAmigos() const;
 
     bool agregarMensajeEnviado(Mensajes* mensaje);
     bool agregarMensajeRecibido(Mensajes* mensaje);
-    bool enviarMensaje(Usuario* destinatario,const std::string& contenido,const std::string& fecha);
     Mensajes* getMensajeRecibido(int indice) const;
     bool marcarMensajeComoLeido(int indice);
     int getCantidadMensajesEnviados() const;
     int getCantidadMensajesRecibidos() const;
+    bool registrarMensajeEnviado(Mensajes* mensaje);
+    void quitarUltimoMensajeEnviado();
 
     bool agregarAlbum(Album* album);
     Album* getAlbum(int indice) const;
@@ -80,10 +88,6 @@ public:
     void setPais(const std::string& pais);
     void setCiudad(const std::string& ciudad);
     void setFechaDeInscripcion(const std::string& fechaDeInscripcion);
-
-    ~Usuario();
-    Usuario(const Usuario& otro);
-    Usuario& operator=(const Usuario& otro);
 };
 
 

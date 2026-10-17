@@ -24,9 +24,12 @@ void MedidorRecursos::liberarMemoria(unsigned long long bytes)
     if (bytes <= memoriaRegistrada)
     {
         memoriaRegistrada -= bytes;
-    }
-    else
-    {
+    }else{
+        std::cout << "Advertencia: se intentan liberar "
+                  << bytes << " bytes, pero solo hay "
+                  << memoriaRegistrada
+                  << " bytes registrados.\n";
+
         memoriaRegistrada = 0;
     }
 }

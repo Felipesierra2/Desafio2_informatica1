@@ -11,6 +11,9 @@ Usuario::Usuario()
     pais(""),
     ciudad(""),
     fechaDeInscripcion(""),
+    amigos(nullptr),
+    cantidadAmigos(0),
+    capacidadAmigos(0),
     mensajesEnviados(nullptr),
     cantidadMensajesEnviados(0),
     capacidadMensajesEnviados(0),
@@ -41,6 +44,9 @@ Usuario::Usuario(const std::string& apodo,
     pais(pais),
     ciudad(ciudad),
     fechaDeInscripcion(fechaDeInscripcion),
+    amigos(nullptr),
+    cantidadAmigos(0),
+    capacidadAmigos(0),
     mensajesEnviados(nullptr),
     cantidadMensajesEnviados(0),
     capacidadMensajesEnviados(0),
@@ -98,6 +104,35 @@ bool Usuario::agregarAmigo(Usuario* usuario){
     amigos[cantidadAmigos] = usuario;
     ++cantidadAmigos;
     return true;
+}
+
+bool Usuario::quitarAmigo(Usuario* usuario)
+{
+    if (usuario == nullptr)
+    {
+        return false;
+    }
+
+    for (int i = 0; i < cantidadAmigos; ++i)
+    {
+        MedidorRecursos::registrarIteracion();
+
+        if (amigos[i] == usuario)
+        {
+            for (int j = i; j < cantidadAmigos - 1; ++j)
+            {
+                MedidorRecursos::registrarIteracion();
+                amigos[j] = amigos[j + 1];
+            }
+
+            cantidadAmigos--;
+            amigos[cantidadAmigos] = nullptr;
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /*Metodo con el que accedemos
@@ -179,44 +214,6 @@ bool Usuario::agregarMensajeRecibido(Mensajes* mensaje)
     return true;
 }
 
-bool Usuario::enviarMensaje(Usuario* destinatario,const std::string& contenido,const std::string& fecha){
-    MedidorRecursos::iniciarMedicion();
-
-    if (destinatario == nullptr || destinatario == this)
-    {
-        MedidorRecursos::mostrarReporte();
-        return false;
-    }
-
-    Mensajes* mensaje = new Mensajes(
-        this,
-        destinatario,
-        contenido,
-        fecha
-        );
-    MedidorRecursos::registrarMemoria(sizeof(Mensajes));
-
-    if (!agregarMensajeEnviado(mensaje))
-    {
-        MedidorRecursos::liberarMemoria(sizeof(Mensajes));
-        delete mensaje;
-        MedidorRecursos::mostrarReporte();
-        return false;
-    }
-
-    if (!destinatario->agregarMensajeRecibido(mensaje))
-    {
-        cantidadMensajesEnviados--;
-        MedidorRecursos::liberarMemoria(sizeof(Mensajes));
-        delete mensaje;
-        MedidorRecursos::mostrarReporte();
-        return false;
-    }
-
-    MedidorRecursos::mostrarReporte();
-    return true;
-}
-
 Mensajes* Usuario::getMensajeRecibido(int indice) const
 {
     if (indice < 0 || indice >= cantidadMensajesRecibidos)
@@ -249,6 +246,10 @@ int Usuario::getCantidadMensajesRecibidos() const
     return cantidadMensajesRecibidos;
 }
 
+bool Usuario::registrarMensajeEnviado(Mensajes* mensaje)
+{
+    return agregarMensajeEnviado(mensaje);
+}
 
 bool Usuario::agregarAlbum(Album* album)
 {
@@ -384,13 +385,13 @@ Usuario::~Usuario(){
     MedidorRecursos::liberarMemoria(capacidadMensajesRecibidos * sizeof(Mensajes*));
     delete[] mensajesRecibidos;
 
+    MedidorRecursos::liberarMemoria(capacidadSolicitudes * sizeof(Solicitud*));
     delete[] solicitudAmistad;
 
     for (int i = 0; i < cantidadAlbumes; i++){
         delete albumes[i];
     }
     MedidorRecursos::liberarMemoria(capacidadAlbumes * sizeof(Album*));
-
     delete[] albumes;
 }
 /*Realiza una copia técnica de los datos del usuario y sus referencias
@@ -464,6 +465,9 @@ Usuario::Usuario(const Usuario& otro)
     }
 }
 
+
+/*Sobrecarga de operadores, metodo con el que almacenamos el nuevo usuario
+ */
 Usuario& Usuario::operator=(const Usuario& otro)
 {
     if (this == &otro) {
@@ -502,4 +506,72 @@ Usuario& Usuario::operator=(const Usuario& otro)
 
     return *this;
 }
+
+void Usuario::quitarUltimoMensajeEnviado()
+{
+    if (cantidadMensajesEnviados > 0)
+    {
+        cantidadMensajesEnviados--;
+        mensajesEnviados[cantidadMensajesEnviados] = nullptr;
+    }
+}
+
+bool Usuario::agregarSolicitud(Solicitud* solicitud)
+{
+    if (solicitud == nullptr)
+    {
+        return false;
+    }
+
+    if (cantidadSolicitudes == capacidadSolicitudes)
+    {
+        int nuevaCapacidad;
+
+        if (capacidadSolicitudes == 0)
+        {
+            nuevaCapacidad = 2;
+        }
+        else
+        {
+            nuevaCapacidad = capacidadSolicitudes * 2;
+        }
+
+        Solicitud** nuevoArreglo = new Solicitud*[nuevaCapacidad];
+
+        for (int i = 0; i < cantidadSolicitudes; ++i)
+        {
+            MedidorRecursos::registrarIteracion();
+            nuevoArreglo[i] = solicitudAmistad[i];
+        }
+
+        MedidorRecursos::registrarMemoria(
+            nuevaCapacidad * sizeof(Solicitud*)
+            );
+
+        MedidorRecursos::liberarMemoria(
+            capacidadSolicitudes * sizeof(Solicitud*)
+            );
+
+        delete[] solicitudAmistad;
+        solicitudAmistad = nuevoArreglo;
+        capacidadSolicitudes = nuevaCapacidad;
+    }
+
+    solicitudAmistad[cantidadSolicitudes] = solicitud;
+    cantidadSolicitudes++;
+
+    return true;
+}
+
+Solicitud* Usuario::getSolicitud(int indice) const
+{
+    if (indice < 0 || indice >= cantidadSolicitudes)
+    {
+        return nullptr;
+    }
+
+    return solicitudAmistad[indice];
+}
+
+
 
